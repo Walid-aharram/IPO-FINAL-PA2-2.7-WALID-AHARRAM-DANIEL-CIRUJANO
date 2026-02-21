@@ -6,7 +6,7 @@ Lo que pensamos fue en una nevera que se reestableciera sola cuando quedan pocos
 
 Para lo único que hemos usado la inteligencia artificial ha sido para preguntarla si la idea nuestra le parecía buena y que nos diera alguna mejora posible a nuestro producto ya que la idea nuestra era muy básica y no nos daba suficiente contenido para hacer el elevator pitch.
 
-![uso de IA](elevator pitch.png)
+![uso de IA](elevator_pitch.png)
 
 Gracias a la inteligencia artificial podemos incluir a nuestro producto original las ideas de gestión de caducidad y la de los perfiles de usuario, para que parezca un producto más profesional y más completo que lo que habíamos pensado al principio nosotros.
 
