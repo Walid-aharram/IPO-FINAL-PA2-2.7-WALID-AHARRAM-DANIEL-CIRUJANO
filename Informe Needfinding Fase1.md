@@ -55,6 +55,6 @@ Daniel Cirujano, Walid Aharram y Enrique García
           
 
  **Conclusiones**  
-            * Hemos realizado entrevistas a perfiles de edad muy diversos, en general todos comparten preocupaciones sobre la accesibilidad, la desinformación y el impacto de la inteligencia artificial. Mientras los  jóvenes se centran más en la optimización, comodidad y eficiencia, los perfiles de mayor edad destacan la inclusión digital, una mejor accesibilidad y la fiabilidad de la información.
+             Hemos realizado entrevistas a perfiles de edad muy diversos, en general todos comparten preocupaciones sobre la accesibilidad, la desinformación y el impacto de la inteligencia artificial. Mientras los  jóvenes se centran más en la optimización, comodidad y eficiencia, los perfiles de mayor edad destacan la inclusión digital, una mejor accesibilidad y la fiabilidad de la información.
 
 
