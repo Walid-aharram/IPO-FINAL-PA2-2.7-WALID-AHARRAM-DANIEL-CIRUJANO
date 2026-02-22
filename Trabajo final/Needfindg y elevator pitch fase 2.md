@@ -11,27 +11,41 @@ Por lo tanto, nos hemos centrado en esta fase a validar esta necesidad, para ell
 El total de personas que realizaron esta encuesta fueron 29, la mayoría de ellos jóvenes ya que es la  gente con la que más nos relacionamos.
 
 ![Imagen 1](Imagenes/imagen1.png) 
-![][imagen2]  
+
+![Imagen 2](Imagenes/imagen2.png)
+
 Algo que también hemos demostrado es que la mayoría de encuestados suele recibir noticias a  través de las redes sociales o periódicos digitales y son precisamente los medios que más contenido  falso suelen tener ya que cada persona puede publicar lo que desee sin necesidad de que sea  información verificada. 
 
-![][imagen3]  
+![Imagen 3](Imagenes/imagen3.png)
+
 Solamente 2 personas del total de encuestados, no suelen dudar nunca de la veracidad de una  noticia, lo que nos demuestra que realmente la desinformación es un problema que afecta a la  mayoría de personas, incluso a los más jóvenes.  
-![][imagen4]  
+
+![Imagen 4](Imagenes/imagen4.png)
+
 Casi todas las personas han creído en una información que al final fue falsa, por tanto,  consideramos que es importante que haya un sistema de verificación y nos afirma las respuestas que obtuvimos en las entrevistas que realizamos en la primera fase. 
 
-![][imagen5]  
+![Imagen 5](Imagenes/imagen5.png)
+
 También se demuestra que la gente suele compartir noticias falsas ya que suelen ser las noticias que  más llaman la atención y por tanto las que más se pueden propagar y difundir entre los usuarios.  
-![][imagen6]  
+
+![Imagen 6](Imagenes/imagen6.png)
+
 Somos conscientes de que el contenido generado por IA suele usarse muchas veces para difundir  noticias falsas sobre todo mediante vídeos e imágenes que no son reales, por esta razón hemos  añadido esta pregunta y podemos observar que a la mayoría les resulta fácil distinguirlo y pensamos que es por la gran cantidad de jóvenes que fueron encuestados y que ya están familiarizados con  este tipo de contenido en las redes, pero dados los porcentajes, hay jóvenes a los que incluso les  resulta difícil y sobretodo a la gran mayoría de adultos. 
 
-![][imagen7]  
+![Imagen 7](Imagenes/imagen7.png)
+
 Como en la fase 1, tuvimos varias personas mayores que se quejaron de este tema quisimos ver si  los encuestados piensan si es un problema real y podemos observar que el 89.7% opina que los  mayores son más vulnerables ante la desinformación.  
-![][imagen8]  
+
+![Imagen 8](Imagenes/imagen8.png)
+
 A la mayoría le puede llegar a frustrar la cantidad de información falsa que los usuarios pueden  llegar a creer en las redes, por tanto consideramos que es necesario que la información se verifique. 
 
-![][imagen9]  
+![Imagen 9](Imagenes/imagen9.png)
+
 Quisimos ver qué opinaban los encuestados sobre nuestra idea básicamente, si nuestras gafas  podrían ser útiles o no y la mayoría creen que sería de gran utilidad y hay otro gran porcentaje que  consideran que es útil para colectivos menos familiarizados con la tecnología.  
-![][imagen10]  
+
+![Imagen 10](Imagenes/imagen10.png)
+
 Quisimos también ver cuánto estarían dispuestos a pagar por un dispositivo así y tuvimos diferentes opiniones, nos sorprendió el hecho de que haya personas que incluso puedan llegar a pagar más de  50€ lo que demuestra la necesidad de esta herramienta. Pero la mayoría considera que el precio  justo debería estar entre los 0 y los 30€. 
 
 **Conclusiones**  
@@ -53,5 +67,6 @@ Nuestro objetivo es devolver la confianza digital a todas las personas, incluido
 
 En el Elevator pitch lo hemos redactado con nuestras propias palabras, pero hemos consultado a  Chat GPT para ver si podíamos mejorarlo de alguna forma:  
 
-![][imagen11]
+![Imagen 11](Imagenes/imagen11.png)
+
 Hay algunas estructuras que hemos seguido.
