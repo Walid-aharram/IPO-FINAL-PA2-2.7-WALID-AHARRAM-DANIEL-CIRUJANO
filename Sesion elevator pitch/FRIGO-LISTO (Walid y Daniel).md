@@ -1,4 +1,4 @@
-***Frigo Listo*** 
+# Frigo Listo 
 
 Durante los primeros minutos nos hemos dedicado a pensar una idea/producto para llevar a cabo el elevator pitch porque aún no teníamos claro la idea de nuestra práctica final, por ello lo hicimos de un producto inventado por nuestra parte.
 
@@ -12,7 +12,7 @@ Gracias a la inteligencia artificial podemos incluir a nuestro producto original
 
 Luego con los ejemplos vistos en clase nos pusimos a pensar cómo podríamos realizar nuestro elevator pitch y después de hacer varios y que cada uno hiciera el suyo para exponerlo, decidimos juntar los dos en uno definitivo que sería el que usáramos en caso de presentar nuestro producto de forma definitiva.
 
-*ELEVATOR PITCH*
+**ELEVATOR PITCH**
 
 ¿Cuántas veces habéis ido a la nevera pensando en cocinar un plato que te apetece y al final te falta algún producto o descubres que se te ha caducado en el fondo del refrigerador? Hace mal tiempo y no te apetece nada salir a hacer la compra, o viene visita a casa y no tienes posibilidad de conseguirlo.
 
