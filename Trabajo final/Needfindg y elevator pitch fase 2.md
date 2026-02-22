@@ -10,7 +10,7 @@ Por lo tanto, nos hemos centrado en esta fase a validar esta necesidad, para ell
 
 El total de personas que realizaron esta encuesta fueron 29, la mayoría de ellos jóvenes ya que es la  gente con la que más nos relacionamos.
 
-![][Imagenes/imagen1]  
+![](Imagenes/imagen1)  
 ![][imagen2]  
 Algo que también hemos demostrado es que la mayoría de encuestados suele recibir noticias a  través de las redes sociales o periódicos digitales y son precisamente los medios que más contenido  falso suelen tener ya que cada persona puede publicar lo que desee sin necesidad de que sea  información verificada. 
 
