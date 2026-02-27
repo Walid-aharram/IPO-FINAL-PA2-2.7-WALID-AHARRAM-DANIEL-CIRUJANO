@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gafas Inteligentes - Verificador de Realidad</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #050505;
+            background-image: 
+                linear-gradient(rgba(0, 255, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 0, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: white;
+            overflow: hidden; /* Evita el scroll para mantener la inmersión */
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            padding: 0;
+            touch-action: none; /* Mejor experiencia táctil en móviles */
+        }
+
+        /* El Foco de Luz (La mirada del usuario) */
+        #spotlight {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none; /* Permite hacer clic a través de la sombra */
+            /* El gradiente crea el agujero transparente en el centro y oscurece el resto. Ampliado de 220px a 350px */
+            background: radial-gradient(circle 350px at var(--x, 50%) var(--y, 50%), transparent 15%, rgba(0, 0, 0, 0.98) 85%);
+            z-index: 50;
+            transition: background 0.1s ease-out;
+        }
+
+        /* Estilo base de las noticias en el fondo (Mundo real confuso) */
+        .news-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0.2;
+            filter: blur(4px) grayscale(50%);
+            transform: scale(0.95);
+            cursor: crosshair;
+        }
+
+        /* Cuando la mirada (el ratón) se posa sobre la noticia */
+        .news-card:hover {
+            opacity: 1;
+            filter: blur(0) grayscale(0%);
+            transform: scale(1.05);
+            z-index: 60;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+
+        /* Animación del escáner de las gafas */
+        .scan-line {
+            position: absolute;
+            left: 0;
+            top: -10px;
+            width: 100%;
+            height: 4px;
+            background: #3b82f6;
+            box-shadow: 0 0 15px 5px rgba(59, 130, 246, 0.5);
+            display: none;
+            z-index: 10;
+        }
+
+        .analyzing .scan-line {
+            display: block;
+            animation: scan 1.2s ease-in-out infinite alternate;
+        }
+
+        @keyframes scan {
+            0% { top: 0%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+
+        /* Estados de Verificación (Auras de color) */
+        .verified {
+            box-shadow: 0 0 40px rgba(34, 197, 94, 0.4), inset 0 0 20px rgba(34, 197, 94, 0.2);
+            border-color: #22c55e !important;
+        }
+        .fake {
+            box-shadow: 0 0 40px rgba(239, 68, 68, 0.4), inset 0 0 20px rgba(239, 68, 68, 0.2);
+            border-color: #ef4444 !important;
+        }
+        .warning {
+            box-shadow: 0 0 40px rgba(249, 115, 22, 0.4), inset 0 0 20px rgba(249, 115, 22, 0.2);
+            border-color: #f97316 !important;
+        }
+
+        /* HUD - Interfaz de las gafas */
+        .hud-element {
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen relative">
+
+    <!-- Capa Oscura y Foco de Luz -->
+    <div id="spotlight"></div>
+
+    <!-- Interfaz de las Gafas (HUD) -->
+    <div class="absolute top-6 left-6 z-[60] text-blue-400 hud-element flex items-center space-x-3 pointer-events-none">
+        <i class="fa-solid fa-vr-cardboard text-3xl animate-pulse"></i>
+        <div>
+            <h1 class="text-xl font-bold tracking-widest uppercase">Gafas Inteligentes</h1>
+            <p class="text-xs text-blue-300">Modo Accesibilidad Senior: <span class="text-green-400">Activado</span></p>
+        </div>
+    </div>
+    
+    <div class="absolute bottom-6 text-center w-full z-[60] pointer-events-none opacity-60">
+        <p class="text-sm tracking-widest"><i class="fa-solid fa-eye mr-2"></i>Mueve tu mirada (ratón/dedo) para enfocar y analizar</p>
+    </div>
+
+    <!-- Contenedor del Mundo Real (Noticias) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 p-8 max-w-6xl w-full z-10 relative mt-10">
+
+        <!-- Noticia 1: Falsa (Generada por IA) -->
+        <div class="news-card bg-gray-900 border-2 border-gray-800 rounded-2xl p-6 relative overflow-hidden h-80 flex flex-col justify-center" data-status="fake">
+            <div class="scan-line"></div>
+            
+            <!-- Vista normal (Confusa) -->
+            <div class="original-content transition-opacity duration-300">
+                <div class="flex items-center space-x-2 mb-4 text-gray-400">
+                    <i class="fa-brands fa-facebook text-blue-600"></i>
+                    <span class="text-xs font-bold">Compartido por 45k personas</span>
+                </div>
+                <h2 class="text-2xl font-bold mb-3 text-gray-100">URGENTE: El gobierno cobrará un nuevo impuesto por respirar en las grandes ciudades.</h2>
+                <img src="https://via.placeholder.com/400x150/222/555?text=Imagen+Borrosa+de+Manifestacion" class="w-full h-24 object-cover rounded mb-3 opacity-50" alt="Noticia">
+                <p class="text-gray-500 text-sm line-clamp-2">Fuentes exclusivas confirman este nuevo impuesto al oxígeno a partir del mes que viene. ¡Comparte antes de que lo censuren!</p>
+            </div>
+
+            <!-- Vista Modo Senior (Análisis de Gafas) -->
+            <div class="analysis-content hidden flex-col items-center justify-center h-full text-center absolute inset-0 bg-gray-900 bg-opacity-95 p-6">
+                <i class="fa-solid fa-robot text-6xl text-red-500 mb-4 animate-bounce"></i>
+                <h3 class="text-3xl font-extrabold text-red-500 mb-2">ES MENTIRA</h3>
+                <p class="text-xl text-white font-medium">Texto e imagen creados por ordenador (IA).</p>
+                <div class="mt-6 bg-red-500/20 text-red-200 px-4 py-2 rounded-full border border-red-500/50 flex items-center">
+                    <i class="fa-solid fa-shield-halved mr-2"></i>
+                    <span>Acción recomendada: <b>Ignorar</b></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Noticia 2: Verdadera -->
+        <div class="news-card bg-gray-900 border-2 border-gray-800 rounded-2xl p-6 relative overflow-hidden h-80 flex flex-col justify-center" data-status="verified">
+            <div class="scan-line"></div>
+            
+            <!-- Vista normal (Confusa) -->
+            <div class="original-content transition-opacity duration-300">
+                <div class="flex items-center space-x-2 mb-4 text-gray-400">
+                    <i class="fa-solid fa-newspaper text-gray-300"></i>
+                    <span class="text-xs font-bold">Portal de Salud</span>
+                </div>
+                <h2 class="text-2xl font-bold mb-3 text-gray-100">Campaña BOE-A-2023-145: Vacunación antigripal para la tercera edad.</h2>
+                <p class="text-gray-500 text-sm line-clamp-4">Según la resolución del ministerio publicada hoy en el boletín oficial, se procederá a la inoculación sistemática de los grupos de riesgo comprendidos en la franja demográfica superior a los 65 años de edad en los centros de atención primaria...</p>
+            </div>
+
+            <!-- Vista Modo Senior (Análisis de Gafas) -->
+            <div class="analysis-content hidden flex-col items-center justify-center h-full text-center absolute inset-0 bg-gray-900 bg-opacity-95 p-6">
+                <i class="fa-solid fa-circle-check text-6xl text-green-500 mb-4"></i>
+                <h3 class="text-3xl font-extrabold text-green-500 mb-2">VERIFICADO</h3>
+                <p class="text-xl text-white font-medium">La campaña de la gripe empieza el lunes.</p>
+                <div class="mt-6 bg-green-500/20 text-green-200 px-4 py-2 rounded-full border border-green-500/50 flex items-center">
+                    <i class="fa-solid fa-info-circle mr-2"></i>
+                    <span>Fuente: <b>Ministerio de Sanidad</b></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Noticia 3: Estafa/Phishing -->
+        <div class="news-card bg-gray-900 border-2 border-gray-800 rounded-2xl p-6 relative overflow-hidden h-80 flex flex-col justify-center" data-status="warning">
+            <div class="scan-line"></div>
+            
+            <!-- Vista normal (Confusa) -->
+            <div class="original-content transition-opacity duration-300">
+                <div class="flex items-center space-x-2 mb-4 text-gray-400">
+                    <i class="fa-brands fa-whatsapp text-green-500"></i>
+                    <span class="text-xs font-bold">Mensaje Reenviado</span>
+                </div>
+                <h2 class="text-2xl font-bold mb-3 text-gray-100">🎁 ¡Enhorabuena! Eres el ganador de un iPhone 15 Pro Max.</h2>
+                <p class="text-gray-500 text-sm mb-4">Tu número ha sido seleccionado al azar. Haz clic en el enlace de abajo y mete los datos de tu tarjeta solo para pagar 1€ de gastos de envío.</p>
+                <div class="text-blue-500 underline text-sm truncate">http://premio-seguro-iphone-gratis-123.com/reclamar</div>
+            </div>
+
+            <!-- Vista Modo Senior (Análisis de Gafas) -->
+            <div class="analysis-content hidden flex-col items-center justify-center h-full text-center absolute inset-0 bg-gray-900 bg-opacity-95 p-6">
+                <i class="fa-solid fa-triangle-exclamation text-6xl text-orange-500 mb-4 animate-pulse"></i>
+                <h3 class="text-3xl font-extrabold text-orange-500 mb-2">ESTAFA</h3>
+                <p class="text-xl text-white font-medium">Quieren robarte los datos del banco.</p>
+                <div class="mt-6 bg-orange-500/20 text-orange-200 px-4 py-2 rounded-full border border-orange-500/50 flex items-center">
+                    <i class="fa-solid fa-ban mr-2"></i>
+                    <span>Acción recomendada: <b>Borrar mensaje</b></span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const spotlight = document.getElementById('spotlight');
+        const cards = document.querySelectorAll('.news-card');
+
+        // Función para mover el foco con el ratón o el dedo
+        function updateSpotlight(e) {
+            let x, y;
+            if (e.type.includes('touch')) {
+                x = e.touches[0].clientX;
+                y = e.touches[0].clientY;
+            } else {
+                x = e.clientX;
+                y = e.clientY;
+            }
+            // Actualiza las variables CSS que controlan el centro del agujero de luz
+            spotlight.style.setProperty('--x', `${x}px`);
+            spotlight.style.setProperty('--y', `${y}px`);
+        }
+
+        // Escuchar eventos de movimiento
+        window.addEventListener('mousemove', updateSpotlight);
+        window.addEventListener('touchmove', updateSpotlight, { passive: false }); // passive: false ayuda a evitar el scroll en móviles al arrastrar
+
+        // Lógica de "Análisis" al enfocar la mirada (hover)
+        cards.forEach(card => {
+            let analysisTimer;
+            
+            // Función de inicio de enfoque
+            const handleFocus = () => {
+                // 1. Iniciar animación de escaneo
+                card.classList.add('analyzing');
+                
+                // 2. Simular el tiempo de procesamiento de la red neuronal (1.2 segundos)
+                analysisTimer = setTimeout(() => {
+                    card.classList.remove('analyzing');
+                    
+                    // Obtener el estado real de la noticia (verificado, falso, peligro)
+                    const status = card.dataset.status;
+                    card.classList.add(status); // Añade el aura de color correspondiente
+
+                    // Ocultar texto confuso, mostrar Modo Senior
+                    card.querySelector('.original-content').style.opacity = '0';
+                    setTimeout(() => {
+                        card.querySelector('.original-content').classList.add('hidden');
+                        card.querySelector('.analysis-content').classList.remove('hidden');
+                        card.querySelector('.analysis-content').classList.add('flex');
+                    }, 150);
+                    
+                }, 1200); 
+            };
+
+            // Función de pérdida de enfoque
+            const handleBlur = () => {
+                clearTimeout(analysisTimer); // Cancelar escaneo si el usuario aparta la mirada rápido
+                
+                // Resetear estado visual
+                card.classList.remove('analyzing', 'verified', 'fake', 'warning');
+                
+                // Volver a mostrar el contenido original
+                card.querySelector('.analysis-content').classList.add('hidden');
+                card.querySelector('.analysis-content').classList.remove('flex');
+                card.querySelector('.original-content').classList.remove('hidden');
+                setTimeout(() => {
+                    card.querySelector('.original-content').style.opacity = '1';
+                }, 50);
+            };
+
+            // Eventos para Ratón
+            card.addEventListener('mouseenter', handleFocus);
+            card.addEventListener('mouseleave', handleBlur);
+
+            // Eventos para Táctil (Móviles)
+            card.addEventListener('touchstart', (e) => {
+                // Prevenimos comportamiento por defecto solo si no estamos desplazando la página mucho
+                handleFocus();
+            }, { passive: true });
+            
+            card.addEventListener('touchend', handleBlur);
+        });
+
+        // Centrar el foco inicialmente
+        window.onload = () => {
+            spotlight.style.setProperty('--x', `${window.innerWidth / 2}px`);
+            spotlight.style.setProperty('--y', `${window.innerHeight / 2}px`);
+        }
+    </script>
+</body>
+</html>
