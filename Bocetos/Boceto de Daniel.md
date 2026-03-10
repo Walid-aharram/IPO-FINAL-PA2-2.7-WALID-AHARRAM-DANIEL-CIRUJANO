@@ -1,6 +1,6 @@
 # Boceto de Daniel Cirujano # 
 
-**Mi propuesta de diseño**
+# Mi propuesta de diseño #
 
 En mi boceto para la interfaz de NeuroVeraz, en lugar de usar un sistema de "foco" automático que analiza hacia dónde mira el usuario, he decidido utilizar el control manual.
 
