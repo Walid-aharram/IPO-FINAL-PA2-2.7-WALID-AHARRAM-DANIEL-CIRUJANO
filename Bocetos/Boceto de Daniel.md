@@ -1,4 +1,4 @@
-**Boceto de Daniel Cirujano** 
+# Boceto de Daniel Cirujano # 
 
 **Mi propuesta de diseño**
 
