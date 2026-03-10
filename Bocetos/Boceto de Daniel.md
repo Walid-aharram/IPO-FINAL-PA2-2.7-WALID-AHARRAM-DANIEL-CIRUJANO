@@ -2,7 +2,7 @@
 
 # Mi propuesta de diseño #
 
-En mi boceto para la interfaz de NeuroVeraz, en lugar de usar un sistema de "foco" automático que analiza hacia dónde mira el usuario, he decidido utilizar el control manual.
+En mi boceto para la interfaz de las gafas inteligentes, en lugar de usar un sistema de "foco" automático que analiza hacia dónde mira el usuario, he decidido utilizar el control manual.
 
 Pensando sobre todo en nuestro público (personas mayores o gente que no se lleva tan bien con la tecnología), que la pantalla empiece a hacer cosas sola o a verificar textos automáticamente puede llegar a confundir. Por eso, diseñé una interfaz mucho más clásica, basada en botones grandes y claros. 
 
