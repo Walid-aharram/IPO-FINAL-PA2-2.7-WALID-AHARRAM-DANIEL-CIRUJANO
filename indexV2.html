@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gafas Inteligentes - AR Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background-color: #000;
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* ESCENA VIRTUAL (Fondo Salón Realista) */
+        #escena-ar {
+            position: absolute;
+            top: -5vh;
+            left: -10vw;
+            width: 120vw;
+            height: 110vh;
+            background-image: url('https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=2000&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s ease-out;
+            z-index: 10;
+        }
+
+        /* FOCO INMERSIVO (Simulación de vista a través de lentes) */
+        #overlay-foco {
+            position: fixed; 
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none; 
+            z-index: 50;
+            background: radial-gradient(circle 450px at var(--x, 50%) var(--y, 50%), transparent 15%, rgba(0, 0, 0, 0.92) 85%);
+            transition: background 0.1s ease-out;
+        }
+
+        /* MONITOR VIRTUAL FLOTANTE */
+        #monitor-virtual {
+            width: 70vw; 
+            height: 80vh;
+            background: rgba(15, 23, 42, 0.65); 
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: flotar 8s ease-in-out infinite alternate;
+            z-index: 20;
+        }
+
+        @keyframes flotar {
+            0% { transform: translateY(0px) rotateX(0deg); }
+            100% { transform: translateY(-10px) rotateX(1deg); }
+        }
+
+        .browser-header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 0.8rem 1.2rem;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .browser-url {
+            flex-grow: 1;
+            background: rgba(255,255,255,0.15);
+            padding: 6px 15px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            color: #60a5fa;
+            text-align: center;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .portal-content {
+            flex-grow: 1;
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+            overflow-y: auto;
+            scrollbar-width: none;
+            justify-content: center;
+        }
+
+        .portal-content::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* TARJETAS DE NOTIFICACIÓN */
+        .tarjeta-noticia {
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
+            color: #0f172a;
+            border-radius: 1rem;
+            min-height: 90px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            border: 2px solid transparent;
+            display: flex;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .noticia-activa {
+            transform: scale(1.025);
+            z-index: 20;
+        }
+
+        /* COLORES SEMÁNTICOS */
+        .aura-verde { border-color: #22c55e !important; box-shadow: 0 0 20px rgba(34, 197, 94, 0.3); }
+        .aura-roja { border-color: #ef4444 !important; box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
+        .aura-naranja { border-color: #f97316 !important; box-shadow: 0 0 20px rgba(249, 115, 22, 0.3); }
+
+        .resultado-analisis {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            width: 40%; 
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            transform: translateX(101%); 
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .resultado-analisis.mostrar { transform: translateX(0); }
+
+        .linea-escaner {
+            position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+            background: #3b82f6; box-shadow: 0 0 10px #3b82f6;
+            animation: escanear 1.5s linear infinite; display: none; z-index: 30;
+        }
+
+        @keyframes escanear { 0% { top: 0; opacity: 0; } 50% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+
+        /* HUD - INTERFAZ DE GAFAS */
+        .ar-hud-top {
+            position: fixed; top: 20px; right: 25px;
+            color: rgba(255,255,255,0.9); font-size: 0.8rem;
+            z-index: 100; text-align: right;
+        }
+
+        .ar-hud-bottom {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* MODAL DE HISTORIAL */
+        .holograma-panel {
+            background: rgba(8, 20, 45, 0.95);
+            border: 2px solid rgba(56, 189, 248, 0.6);
+            box-shadow: 0 0 60px rgba(56, 189, 248, 0.15);
+            backdrop-filter: blur(20px);
+            position: relative;
+            z-index: 80;
+            color: #e2e8f0;
+        }
+
+        #modal-historial {
+            position: fixed;
+            inset: 0;
+            z-index: 150;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.7);
+        }
+
+        #modal-historial.activo { display: flex; }
+
+        .log-entry {
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 3px solid #3b82f6;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        .entry-status {
+            font-weight: 900;
+            font-size: 0.65rem;
+            margin-bottom: 2px;
+            display: block;
+        }
+
+        /* INDICADOR PATILLA */
+        .patilla-right-hint {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(59, 130, 246, 0.2);
+            padding: 15px 8px;
+            border-radius: 20px 0 0 20px;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            border-right: none;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            font-size: 10px;
+            font-weight: bold;
+            color: #60a5fa;
+            letter-spacing: 2px;
+            z-index: 100;
+        }
+
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.5); border-radius: 10px; }
+
+    </style>
+</head>
+<body onmousemove="moverTodo(event)">
+
+    <div class="patilla-right-hint">BOTÓN EN LA PATILLA DERECHA</div>
+
+    <div id="overlay-foco"></div>
+
+    <div id="escena-ar">
+        <div id="monitor-virtual">
+            <div class="browser-header">
+                <div class="flex gap-2 mr-4">
+                    <div class="w-2.5 h-2.5 rounded-full bg-red-500"></div>
+                    <div class="w-2.5 h-2.5 rounded-full bg-yellow-500"></div>
+                    <div class="w-2.5 h-2.5 rounded-full bg-green-500"></div>
+                </div>
+                <div class="browser-url font-semibold">
+                    <i class="fa-solid fa-bell text-[10px] text-blue-400"></i>
+                    <span>Notificaciones de tu dispositivo 📱</span>
+                </div>
+            </div>
+
+            <div class="portal-content">
+                <!-- NOTIFICACIÓN 1: FIFA NEWS -->
+                <div class="tarjeta-noticia" id="noticia-1" onmouseenter="activarNoticia('1', 'verificado')" onmouseleave="desactivarNoticia('1')">
+                    <div class="linea-escaner" id="escaner-1"></div>
+                    <div class="flex items-center justify-center w-20 bg-slate-100 text-2xl">⚽</div>
+                    <div class="flex-grow p-4">
+                        <span class="text-[9px] font-bold text-blue-600 uppercase tracking-widest">FIFA NEWS • Tendencia</span>
+                        <h2 class="text-sm font-bold text-slate-800 leading-tight mt-0.5">Sedes confirmadas para el Mundial 2030: España lidera la propuesta.</h2>
+                    </div>
+                    <div id="resultado-1" class="resultado-analisis bg-green-50 border-l-4 border-green-500">
+                        <i class="fa-solid fa-check-circle text-green-600 text-2xl mr-3"></i>
+                        <div>
+                            <h3 class="text-[10px] font-black text-green-700">VERIFICADO</h3>
+                            <p class="text-[9px] text-slate-600">Origen: Media-Trust FIFA.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NOTIFICACIÓN 2: WhatsApp -->
+                <div class="tarjeta-noticia" id="noticia-2" onmouseenter="activarNoticia('2', 'falso')" onmouseleave="desactivarNoticia('2')">
+                    <div class="linea-escaner" id="escaner-2"></div>
+                    <div class="flex items-center justify-center w-20 bg-green-50 text-2xl">
+                        <i class="fa-brands fa-whatsapp text-green-500"></i>
+                    </div>
+                    <div class="flex-grow p-4">
+                        <span class="text-[9px] font-bold text-red-600 uppercase tracking-widest">WhatsApp • Alerta Grupal</span>
+                        <h2 class="text-sm font-bold text-slate-800 leading-tight mt-0.5">"¡Urgente! Mañana cierran tus cuentas si no compartes esto."</h2>
+                    </div>
+                    <div id="resultado-2" class="resultado-analisis bg-red-50 border-l-4 border-red-500">
+                        <i class="fa-solid fa-robot text-red-600 text-2xl mr-3"></i>
+                        <div>
+                            <h3 class="text-[10px] font-black text-red-700">BULOS DETECTADO</h3>
+                            <p class="text-[9px] text-slate-600">Patrón: Cadena de desinformación masiva.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NOTIFICACIÓN 3: Alerta Phishing -->
+                <div class="tarjeta-noticia" id="noticia-3" onmouseenter="activarNoticia('3', 'phishing')" onmouseleave="desactivarNoticia('3')">
+                    <div class="linea-escaner" id="escaner-3"></div>
+                    <div class="flex items-center justify-center w-20 bg-red-50 text-2xl">⚠️</div>
+                    <div class="flex-grow p-4">
+                        <span class="text-[9px] font-bold text-orange-600 uppercase tracking-widest">Sistema • Seguridad</span>
+                        <h2 class="text-sm font-bold text-slate-800 leading-tight mt-0.5">Netflix: Error en su suscripción. Actualice sus datos aquí.</h2>
+                    </div>
+                    <div id="resultado-3" class="resultado-analisis bg-orange-50 border-l-4 border-orange-500">
+                        <i class="fa-solid fa-triangle-exclamation text-orange-600 text-2xl mr-3"></i>
+                        <div>
+                            <h3 class="text-[10px] font-black text-orange-700">PHISHING</h3>
+                            <p class="text-[9px] text-slate-600">Dominio falso detectado: netflx.xyz</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="ar-hud-top">
+        <div class="font-bold tracking-tighter uppercase">Gafas Inteligentes v2.5</div>
+        <div id="hud-status" class="text-blue-400 text-[10px] font-black mt-1">SISTEMA AR ACTIVO</div>
+    </div>
+
+    <div class="ar-hud-bottom">
+        <button onclick="toggleHistorial()" class="bg-blue-600/80 hover:bg-blue-500 px-6 py-3 rounded-full border border-blue-400 font-bold text-xs shadow-xl transition-all group">
+            <i class="fa-solid fa-fingerprint mr-2 group-hover:animate-pulse"></i> 
+            ABRIR HISTORIAL
+        </button>
+    </div>
+
+    <div id="modal-historial">
+        <div class="holograma-panel w-[550px] p-8 rounded-[40px]">
+            <div class="flex justify-between items-start mb-8">
+                <div>
+                    <h2 class="text-2xl font-black italic tracking-tighter text-blue-400">HISTORIAL DE ANÁLISIS</h2>
+                    <p class="text-[10px] text-slate-400 font-mono mt-1">SESIÓN ID: #NV-882-XR</p>
+                </div>
+                <button onclick="toggleHistorial()" class="bg-white/10 p-2 rounded-full hover:bg-red-500/20">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 mb-8 text-center">
+                <div class="bg-green-500/10 p-4 rounded-2xl border border-green-500/40">
+                    <div class="text-2xl font-black text-green-400">1.2k</div>
+                    <div class="text-[8px] uppercase font-bold text-green-200">Verificadas</div>
+                </div>
+                <div class="bg-red-500/10 p-4 rounded-2xl border border-red-500/40">
+                    <div class="text-2xl font-black text-red-400">45</div>
+                    <div class="text-[8px] uppercase font-bold text-red-200">Amenazas</div>
+                </div>
+                <div class="bg-orange-500/10 p-4 rounded-2xl border border-orange-500/40">
+                    <div class="text-2xl font-black text-orange-400">08</div>
+                    <div class="text-[8px] uppercase font-bold text-orange-200">Alertas</div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <h3 class="text-[10px] font-black uppercase text-blue-300 mb-3 tracking-widest">Actividad Reciente</h3>
+                <div class="max-h-48 overflow-y-auto pr-2 space-y-2 custom-scroll">
+                    <div class="log-entry border-l-green-500">
+                        <span class="entry-status text-green-400">✓ VERIFICADA</span>
+                        <span class="text-slate-300">FIFA Mundial 2030: Fuente oficial confirmada.</span>
+                    </div>
+                    <div class="log-entry border-l-red-500">
+                        <span class="entry-status text-red-400">⚠ BLOQUEADA</span>
+                        <span class="text-slate-300">Cadena WhatsApp: Detectada desinformación masiva.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const escena = document.getElementById('escena-ar');
+        const overlayFoco = document.getElementById('overlay-foco');
+        const hudStatus = document.getElementById('hud-status');
+        const monitor = document.getElementById('monitor-virtual');
+        const modal = document.getElementById('modal-historial');
+        
+        let analizadorTimeout = {};
+
+        function moverTodo(e) {
+            const x = e.clientX;
+            const y = e.clientY;
+            overlayFoco.style.setProperty('--x', `${x}px`);
+            overlayFoco.style.setProperty('--y', `${y}px`);
+
+            const moveX = (x / window.innerWidth - 0.5) * 15;
+            const moveY = (y / window.innerHeight - 0.5) * 15;
+            escena.style.transform = `translate(${moveX * -1}px, ${moveY * -1}px)`;
+            monitor.style.transform = `rotateY(${moveX * 0.15}deg) rotateX(${moveY * -0.15}deg)`;
+        }
+
+        function activarNoticia(id, tipo) {
+            const card = document.getElementById(`noticia-${id}`);
+            const scanner = document.getElementById(`escaner-${id}`);
+            const result = document.getElementById(`resultado-${id}`);
+
+            card.classList.add('noticia-activa');
+            scanner.style.display = 'block';
+            hudStatus.innerHTML = '<i class="fa-solid fa-sync fa-spin"></i> ESCANEANDO...';
+
+            analizadorTimeout[id] = setTimeout(() => {
+                scanner.style.display = 'none';
+                result.classList.add('mostrar');
+                
+                if(tipo === 'falso') card.classList.add('aura-roja');
+                else if(tipo === 'phishing') card.classList.add('aura-naranja');
+                else card.classList.add('aura-verde');
+                
+                hudStatus.innerText = "ANÁLISIS COMPLETADO";
+            }, 800);
+        }
+
+        function desactivarNoticia(id) {
+            const card = document.getElementById(`noticia-${id}`);
+            const result = document.getElementById(`resultado-${id}`);
+            clearTimeout(analizadorTimeout[id]);
+            card.classList.remove('noticia-activa', 'aura-verde', 'aura-roja', 'aura-naranja');
+            result.classList.remove('mostrar');
+            document.getElementById(`escaner-${id}`).style.display = 'none';
+            hudStatus.innerText = "SISTEMA AR ACTIVO";
+        }
+
+        function toggleHistorial() {
+            modal.classList.toggle('activo');
+        }
+
+        window.onload = () => {
+            overlayFoco.style.setProperty('--x', '50%');
+            overlayFoco.style.setProperty('--y', '50%');
+        };
+    </script>
+</body>
+</html>
