@@ -1,4 +1,5 @@
-# PRÁCTICA: Teoría del color y tipografía 1\. Introducción #   
+# PRÁCTICA: Teoría del color y tipografía #
+**1\. Introducción**    
 • **Contexto:** La semana pasada vimos algunos conceptos de HTML, CSS y JavaScript y desarrollamos una primera interfaz con Gemini “a ciegas”. • **Objetivos:** El objetivo de esta práctica es adaptar esa primera interfaz  respetando los principios sobre la teoría del color y la tipografía que tantos  beneficios cognitivos aportan a los usuarios. 
 
 • **Alcance:** Se ha cubierto la fase de ideación y el desarrollo de un prototipo interactivos usando HTML y CSS. 
