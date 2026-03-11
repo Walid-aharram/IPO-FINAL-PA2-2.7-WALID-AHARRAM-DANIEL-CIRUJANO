@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NeuroVeraz - Panel Institucional</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8fafc; /* Fondo gris muy claro, estilo institucional */
+            color: #1e293b;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Animación de carga para el botón de analizar */
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .analyzing .loader {
+            display: block;
+        }
+        .analyzing .btn-text, .analyzing .btn-icon {
+            display: none;
+        }
+
+        /* Transiciones suaves para las tarjetas */
+        .news-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .news-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Estilos de resultados */
+        .result-verified { background-color: #ecfdf5; border-color: #10b981; color: #047857; }
+        .result-fake { background-color: #fef2f2; border-color: #ef4444; color: #b91c1c; }
+        .result-warning { background-color: #fff7ed; border-color: #f97316; color: #c2410c; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <!-- Menú Lateral (Sidebar) estilo Tablet -->
+    <aside class="w-64 bg-white border-r border-slate-200 flex flex-col justify-between hidden md:flex shadow-sm z-20">
+        <div>
+            <div class="p-6 border-b border-slate-100">
+                <div class="flex items-center gap-3 text-blue-700">
+                    <i class="fa-solid fa-glasses text-3xl"></i>
+                    <h1 class="text-2xl font-black leading-tight tracking-tight">Neuro<span class="text-blue-500">Veraz</span></h1>
+                </div>
+            </div>
+            <nav class="p-4 space-y-2">
+                <button onclick="switchTab('news')" id="tab-news" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-blue-50 text-blue-700 font-medium transition text-left">
+                    <i class="fa-regular fa-newspaper text-lg w-6"></i>
+                    Lectura de Noticias
+                </button>
+                <button onclick="switchTab('stats')" id="tab-stats" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-50 font-medium transition text-left">
+                    <i class="fa-solid fa-chart-pie text-lg w-6"></i>
+                    Mi Historial
+                </button>
+            </nav>
+        </div>
+        <div class="p-6 border-t border-slate-100 text-sm text-slate-500">
+            <p><i class="fa-solid fa-user-circle mr-2"></i> Usuario: Lector01</p>
+        </div>
+    </aside>
+
+    <!-- Contenido Principal -->
+    <main class="flex-1 overflow-y-auto bg-slate-50 relative">
+        
+        <!-- Menú Móvil (Top bar) -->
+        <header class="md:hidden bg-white shadow-sm border-b border-slate-200 p-4 flex justify-between items-center sticky top-0 z-20">
+            <div class="flex items-center gap-2 text-blue-700 font-bold text-xl">
+                <i class="fa-solid fa-glasses"></i> Neuro<span class="text-blue-500">Veraz</span>
+            </div>
+            <div class="flex gap-2 text-sm">
+                <button onclick="switchTab('news')" id="tab-news-mobile" class="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-md font-medium">Noticias</button>
+                <button onclick="switchTab('stats')" id="tab-stats-mobile" class="px-3 py-1.5 text-slate-600 rounded-md font-medium">Historial</button>
+            </div>
+        </header>
+
+        <!-- PESTAÑA 1: Noticias -->
+        <div id="view-news" class="p-6 md:p-10 max-w-6xl mx-auto block">
+            <header class="mb-8 flex flex-col md:flex-row md:items-start justify-between gap-4">
+                <div class="w-full">
+                    <h2 class="text-3xl font-bold text-slate-800">Últimas Noticias</h2>
+                    
+                    <!-- Caja de instrucciones más visual -->
+                    <div class="mt-4 flex items-center gap-4 bg-blue-50/80 text-blue-800 p-4 rounded-xl border border-blue-200 shadow-sm w-full md:w-max">
+                        <div class="bg-blue-600 text-white p-2.5 rounded-lg shrink-0">
+                            <i class="fa-solid fa-glasses text-xl"></i>
+                        </div>
+                        <p class="text-lg">Lea las noticias y pulse <strong class="font-bold text-blue-900">"Escanear con Gafas"</strong> si duda de su veracidad.</p>
+                    </div>
+
+                </div>
+            </header>
+
+            <div id="news-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Las noticias se inyectan aquí dinámicamente vía JavaScript -->
+            </div>
+        </div>
+
+        <!-- PESTAÑA 2: Historial y Estadísticas -->
+        <div id="view-stats" class="p-6 md:p-10 max-w-6xl mx-auto hidden">
+            <header class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-800">Mi Historial de Seguridad</h2>
+                <p class="text-slate-500 mt-2 text-lg">Resumen de las noticias que has analizado para protegerte de la desinformación.</p>
+            </header>
+
+            <!-- Tarjetas de Estadísticas -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <!-- Estafas evitadas -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border-l-4 border-orange-500 flex items-center gap-4">
+                    <div class="bg-orange-100 text-orange-600 p-4 rounded-full">
+                        <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-slate-500 text-sm font-bold uppercase tracking-wider">Estafas Evitadas</p>
+                        <p class="text-4xl font-black text-slate-800" id="count-scam">0</p>
+                    </div>
+                </div>
+
+                <!-- Noticias Falsas detectadas -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border-l-4 border-red-500 flex items-center gap-4">
+                    <div class="bg-red-100 text-red-600 p-4 rounded-full">
+                        <i class="fa-solid fa-robot text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-slate-500 text-sm font-bold uppercase tracking-wider">Falsedades (IA)</p>
+                        <p class="text-4xl font-black text-slate-800" id="count-fake">0</p>
+                    </div>
+                </div>
+
+                <!-- Noticias Verificadas -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border-l-4 border-green-500 flex items-center gap-4">
+                    <div class="bg-green-100 text-green-600 p-4 rounded-full">
+                        <i class="fa-solid fa-circle-check text-2xl"></i>
+                    </div>
+                    <div>
+                        <p class="text-slate-500 text-sm font-bold uppercase tracking-wider">Noticias Fiables</p>
+                        <p class="text-4xl font-black text-slate-800" id="count-verified">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Registro en lista -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-6 border-b border-slate-100 bg-slate-50">
+                    <h3 class="text-xl font-bold text-slate-800">Registro Reciente</h3>
+                </div>
+                <div class="p-0">
+                    <ul id="history-list" class="divide-y divide-slate-100">
+                        <li class="p-6 text-center text-slate-500 italic" id="empty-history">
+                            Aún no has analizado ninguna noticia. Ve a la pestaña de lectura y analiza un titular.
+                        </li>
+                        <!-- Los items se añaden aquí vía JS -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Variables globales para las estadísticas
+        let stats = {
+            fake: 0,
+            verified: 0,
+            warning: 0
+        };
+
+        // Base de datos simulada de noticias
+        const newsDatabase = [
+            { status: 'verified', tag: 'Salud Pública', title: 'Campaña BOE-A-2023-145: Vacunación antigripal para la tercera edad.', desc: 'Según la resolución del ministerio publicada hoy en el boletín oficial, se procederá a la inoculación sistemática de los grupos de riesgo comprendidos en la franja demográfica superior a los 65 años...', img: null },
+            { status: 'warning', tag: 'Mensajería', title: '🎁 ¡Enhorabuena! Eres el ganador de un iPhone 15 Pro Max.', desc: 'Tu número ha sido seleccionado al azar. Haz clic en el enlace de abajo y mete los datos de tu tarjeta solo para pagar 1€ de gastos de envío.', img: null },
+            { status: 'fake', tag: 'Redes Sociales', title: 'URGENTE: El gobierno cobrará un nuevo impuesto por respirar en las grandes ciudades.', desc: 'Fuentes exclusivas confirman este nuevo impuesto al oxígeno a partir del mes que viene. ¡Comparte!', img: 'https://via.placeholder.com/400x150/e2e8f0/64748b?text=Manifestaci%C3%B3n' },
+            { status: 'warning', tag: 'SMS Oficial', title: 'DGT: Tiene una multa pendiente de pago. Último aviso antes de recargo.', desc: 'Acceda urgentemente al siguiente enlace para abonar su sanción de 35€ y evitar embargos en su cuenta bancaria. Ref: 884729.', img: null },
+            { status: 'verified', tag: 'Economía', title: 'El Gobierno aprueba la revalorización de las pensiones un 3,8% para este año.', desc: 'El Consejo de Ministros ha dado luz verde al Real Decreto que garantiza el poder adquisitivo de los pensionistas, aplicable desde el 1 de enero.', img: null },
+            { status: 'fake', tag: 'WhatsApp', title: 'AUDIO: Mandan una nueva cepa del virus en los paquetes de mensajería.', desc: 'Un audio filtrado de un supuesto médico del hospital clínico advierte que no abramos paquetes procedentes del extranjero porque vienen infectados.', img: null },
+            { status: 'warning', tag: 'Correos', title: 'Su paquete no ha podido ser entregado por falta de franqueo (1,99€).', desc: 'Estimado cliente, tenemos un paquete retenido en nuestras instalaciones. Pague las tasas aduaneras en el siguiente enlace fraudulento para que se lo enviemos.', img: null },
+            { status: 'verified', tag: 'Tecnología', title: 'La Unión Europea exigirá un cargador universal (USB-C) para todos los móviles.', desc: 'La nueva normativa entrará en vigor a finales de año, obligando a los fabricantes a unificar el puerto de carga para reducir la basura electrónica.', img: null },
+            { status: 'fake', tag: 'Sociedad', title: 'Descubren que las antenas 5G están controlando el clima en tu ciudad.', desc: 'Un bloguero anónimo ha revelado documentos super secretos donde se explica cómo las nuevas antenas cambian el tiempo a voluntad para provocar sequías.', img: null }
+        ];
+
+        // Función para cambiar entre pestañas
+        function switchTab(tabId) {
+            // Ocultar todas las vistas
+            document.getElementById('view-news').classList.add('hidden');
+            document.getElementById('view-stats').classList.add('hidden');
+            
+            // Mostrar la vista seleccionada
+            document.getElementById('view-' + tabId).classList.remove('hidden');
+
+            // Actualizar estilos del menú lateral (Desktop)
+            document.getElementById('tab-news').className = "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-50 font-medium transition text-left";
+            document.getElementById('tab-stats').className = "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 hover:bg-slate-50 font-medium transition text-left";
+            
+            // Actualizar estilos del menú (Móvil)
+            document.getElementById('tab-news-mobile').className = "px-3 py-1.5 text-slate-600 rounded-md font-medium";
+            document.getElementById('tab-stats-mobile').className = "px-3 py-1.5 text-slate-600 rounded-md font-medium";
+
+            // Activar la seleccionada
+            if(tabId === 'news') {
+                document.getElementById('tab-news').className = "w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-blue-50 text-blue-700 font-medium transition text-left";
+                document.getElementById('tab-news-mobile').className = "px-3 py-1.5 bg-blue-100 text-blue-700 rounded-md font-medium";
+            } else {
+                document.getElementById('tab-stats').className = "w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-blue-50 text-blue-700 font-medium transition text-left";
+                document.getElementById('tab-stats-mobile').className = "px-3 py-1.5 bg-blue-100 text-blue-700 rounded-md font-medium";
+            }
+        }
+
+        // Función que carga 3 noticias aleatorias de la base de datos
+        function loadRandomNews(count = 3) {
+            const container = document.getElementById('news-container');
+            container.innerHTML = ''; // Limpiar el contenedor
+            
+            // Barajar la base de datos aleatoriamente
+            const shuffled = [...newsDatabase].sort(() => 0.5 - Math.random());
+            const selectedNews = shuffled.slice(0, count);
+
+            selectedNews.forEach(news => {
+                const imgHtml = news.img ? `<img src="${news.img}" class="w-full h-24 object-cover rounded-lg mb-3" alt="Imagen de la noticia">` : '';
+                const cardHTML = `
+                    <article class="news-card bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col h-full" data-status="${news.status}">
+                        <div class="flex-grow">
+                            <div class="flex items-center gap-2 mb-3">
+                                <span class="bg-slate-100 text-slate-600 text-xs font-bold px-2 py-1 rounded uppercase tracking-wider">${news.tag}</span>
+                            </div>
+                            <h3 class="text-xl font-bold mb-3 text-slate-800 leading-snug">${news.title}</h3>
+                            ${imgHtml}
+                            <p class="text-slate-600 text-base mb-4 line-clamp-3">${news.desc}</p>
+                        </div>
+                        
+                        <div class="mt-4 pt-4 border-t border-slate-100 analysis-area">
+                            <button class="analyze-btn w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition flex items-center justify-center gap-2 text-lg shadow-sm">
+                                <i class="fa-solid fa-glasses btn-icon"></i>
+                                <span class="btn-text">Escanear con Gafas</span>
+                                <div class="loader"></div>
+                            </button>
+                            <div class="result-display hidden p-4 rounded-xl border-2 flex-col items-center text-center"></div>
+                        </div>
+                    </article>
+                `;
+                container.insertAdjacentHTML('beforeend', cardHTML);
+            });
+
+            // Lógica de los botones de analizar (se re-vinculan al crear las nuevas cartas)
+            const analyzeButtons = document.querySelectorAll('.analyze-btn');
+
+            analyzeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const card = this.closest('.news-card');
+                    const status = card.dataset.status;
+                    const resultDisplay = card.querySelector('.result-display');
+                    
+                    // 1. Estado de carga
+                    this.classList.add('analyzing');
+                    this.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                    this.classList.add('bg-slate-400', 'cursor-not-allowed');
+                    this.disabled = true;
+
+                    // 2. Simular tiempo de conexión con el servidor/IA (1.5s)
+                    setTimeout(() => {
+                        // Ocultar botón
+                        this.style.display = 'none';
+                        
+                        // Mostrar y configurar el cuadro de resultado según el estado
+                        resultDisplay.classList.remove('hidden');
+                        resultDisplay.classList.add('flex');
+                        
+                        let titleText = card.querySelector('h3').innerText; // Guardar el título para el historial
+
+                        if (status === 'verified') {
+                            resultDisplay.classList.add('result-verified');
+                            resultDisplay.innerHTML = `
+                                <i class="fa-solid fa-circle-check text-4xl mb-2"></i>
+                                <h4 class="text-xl font-bold">Información Fiable</h4>
+                                <p class="text-sm mt-1">Esta noticia proviene de una fuente oficial verificada.</p>
+                            `;
+                            stats.verified++;
+                            updateStatsAndHistory(titleText, 'verified', 'fa-circle-check', 'text-green-600', 'bg-green-100');
+                        } 
+                        else if (status === 'fake') {
+                            resultDisplay.classList.add('result-fake');
+                            resultDisplay.innerHTML = `
+                                <i class="fa-solid fa-robot text-4xl mb-2"></i>
+                                <h4 class="text-xl font-bold">Contenido Falso (IA)</h4>
+                                <p class="text-sm mt-1">El texto e imagen han sido creados artificialmente para engañar.</p>
+                            `;
+                            stats.fake++;
+                            updateStatsAndHistory(titleText, 'fake', 'fa-robot', 'text-red-600', 'bg-red-100');
+                        } 
+                        else if (status === 'warning') {
+                            resultDisplay.classList.add('result-warning');
+                            resultDisplay.innerHTML = `
+                                <i class="fa-solid fa-triangle-exclamation text-4xl mb-2"></i>
+                                <h4 class="text-xl font-bold">Alerta de Estafa</h4>
+                                <p class="text-sm mt-1">¡Peligro! Es un intento de robo de datos/dinero (Phishing).</p>
+                            `;
+                            stats.warning++;
+                            updateStatsAndHistory(titleText, 'warning', 'fa-triangle-exclamation', 'text-orange-600', 'bg-orange-100');
+                        }
+
+                    }, 1500);
+                });
+            });
+        }
+
+        // Iniciar el generador al cargar la página
+        window.addEventListener('DOMContentLoaded', () => {
+            loadRandomNews();
+        });
+
+        // Función para actualizar los contadores y la lista del historial
+        function updateStatsAndHistory(title, type, iconClass, textColor, bgColor) {
+            // 1. Actualizar Contadores Numéricos
+            document.getElementById('count-verified').innerText = stats.verified;
+            document.getElementById('count-fake').innerText = stats.fake;
+            document.getElementById('count-scam').innerText = stats.warning;
+
+            // 2. Quitar mensaje de lista vacía
+            const emptyMsg = document.getElementById('empty-history');
+            if (emptyMsg) emptyMsg.style.display = 'none';
+
+            // 3. Crear nuevo elemento en la lista
+            const list = document.getElementById('history-list');
+            const li = document.createElement('li');
+            li.className = "p-4 md:p-6 flex items-start gap-4 hover:bg-slate-50 transition";
+            
+            // Formatear hora actual para el historial
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+            let typeLabel = "";
+            if(type === 'verified') typeLabel = "Noticia Fiable";
+            if(type === 'fake') typeLabel = "Noticia Falsa";
+            if(type === 'warning') typeLabel = "Intento de Estafa";
+
+            li.innerHTML = `
+                <div class="${bgColor} ${textColor} p-3 rounded-full shrink-0 mt-1">
+                    <i class="fa-solid ${iconClass} text-xl w-6 text-center"></i>
+                </div>
+                <div class="flex-grow">
+                    <div class="flex justify-between items-baseline mb-1">
+                        <span class="font-bold ${textColor}">${typeLabel}</span>
+                        <span class="text-xs text-slate-400 font-medium"><i class="fa-regular fa-clock mr-1"></i> Hoy, ${timeString}</span>
+                    </div>
+                    <p class="text-slate-700 text-sm font-medium line-clamp-2">${title}</p>
+                </div>
+            `;
+            
+            // Insertar al principio de la lista
+            list.insertBefore(li, list.firstChild);
+        }
+    </script>
+</body>
+</html>
