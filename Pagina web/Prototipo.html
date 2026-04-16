@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gafas Inteligentes - AR Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background-color: #000;
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* ESCENA VIRTUAL (Fondo Salón Realista) */
+        #escena-ar {
+            position: absolute;
+            top: -5vh;
+            left: -10vw;
+            width: 120vw;
+            height: 110vh;
+            background-image: url('https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=2000&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s ease-out;
+            z-index: 10;
+        }
+
+        /* FOCO INMERSIVO (Simulación de vista a través de lentes) */
+        #overlay-foco {
+            position: fixed; 
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none; 
+            z-index: 50;
+            /* Se ha aumentado el radio de 450px a 650px para hacer el foco más grande */
+            background: radial-gradient(circle 650px at var(--x, 50%) var(--y, 50%), transparent 15%, rgba(0, 0, 0, 0.92) 85%);
+            transition: background 0.1s ease-out;
+        }
+
+        /* MONITOR VIRTUAL FLOTANTE */
+        #monitor-virtual {
+            width: 70vw; 
+            height: 80vh;
+            background: rgba(15, 23, 42, 0.65); 
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8), inset 0 0 20px rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: flotar 8s ease-in-out infinite alternate;
+            z-index: 20;
+        }
+
+        @keyframes flotar {
+            0% { transform: translateY(0px) rotateX(0deg); }
+            100% { transform: translateY(-10px) rotateX(1deg); }
+        }
+
+        .browser-header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 0.8rem 1.2rem;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .browser-url {
+            flex-grow: 1;
+            background: rgba(255,255,255,0.15);
+            padding: 6px 15px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            color: #60a5fa;
+            text-align: center;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .portal-content {
+            flex-grow: 1;
+            padding: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+            overflow-y: auto;
+            scrollbar-width: none;
+            justify-content: center;
+        }
+
+        .portal-content::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* TARJETAS DE NOTIFICACIÓN */
+        .tarjeta-noticia {
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
+            color: #0f172a;
+            border-radius: 1rem;
+            min-height: 90px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            border: 2px solid transparent;
+            display: flex;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .noticia-activa {
+            transform: scale(1.025);
+            z-index: 20;
+        }
+
+        /* COLORES SEMÁNTICOS */
+        .aura-verde { border-color: #22c55e !important; box-shadow: 0 0 20px rgba(34, 197, 94, 0.3); }
+        .aura-roja { border-color: #ef4444 !important; box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
+        .aura-naranja { border-color: #f97316 !important; box-shadow: 0 0 20px rgba(249, 115, 22, 0.3); }
+
+        .resultado-analisis {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            width: 40%; 
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            transform: translateX(101%); 
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .resultado-analisis.mostrar { transform: translateX(0); }
+
+        .linea-escaner {
+            position: absolute; top: 0; left: 0; width: 100%; height: 3px;
+            background: #3b82f6; box-shadow: 0 0 10px #3b82f6;
+            animation: escanear 1.5s linear infinite; display: none; z-index: 30;
+        }
+
+        @keyframes escanear { 0% { top: 0; opacity: 0; } 50% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+
+        /* HUD - INTERFAZ DE GAFAS */
+        .ar-hud-top {
+            position: fixed; top: 20px; right: 25px;
+            color: rgba(255,255,255,0.9); font-size: 0.8rem;
+            z-index: 100; text-align: right;
+        }
+
+        .ar-hud-bottom {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* MODAL DE HISTORIAL */
+        .holograma-panel {
+            background: rgba(8, 20, 45, 0.95);
+            border: 2px solid rgba(56, 189, 248, 0.6);
+            box-shadow: 0 0 60px rgba(56, 189, 248, 0.15);
+            backdrop-filter: blur(20px);
+            position: relative;
+            z-index: 80;
+            color: #e2e8f0;
+        }
+
+        #modal-historial {
+            position: fixed;
+            inset: 0;
+            z-index: 150;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.7);
+        }
+
+        #modal-historial.activo { display: flex; }
+
+        .log-entry {
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 3px solid #3b82f6;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        .entry-status {
+            font-weight: 900;
+            font-size: 0.65rem;
+            margin-bottom: 2px;
+            display: block;
+        }
+
+        /* INDICADOR PATILLA */
+        .patilla-right-hint {
+            position: fixed;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(59, 130, 246, 0.2);
+            padding: 15px 8px;
+            border-radius: 20px 0 0 20px;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            border-right: none;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            font-size: 10px;
+            font-weight: bold;
+            color: #60a5fa;
+            letter-spacing: 2px;
+            z-index: 100;
+        }
+
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.5); border-radius: 10px; }
+
+        /* INDICADOR PATILLA IZQUIERDA (BORRAR HISTORIAL) */
+        .patilla-left-hint {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%) rotate(180deg);
+            background: rgba(239, 68, 68, 0.15);
+            padding: 15px 8px;
+            border-radius: 20px 0 0 20px;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            border-right: none;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            font-size: 10px;
+            font-weight: bold;
+            color: #f87171;
+            letter-spacing: 2px;
+            z-index: 160;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .patilla-left-hint:hover {
+            background: rgba(239, 68, 68, 0.4);
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+        }
+
+    </style>
+</head>
+<body onmousemove="moverTodo(event)">
+
+    <div class="patilla-right-hint">BOTÓN EN LA PATILLA DERECHA</div>
+
+    <div id="overlay-foco"></div>
+
+    <div id="escena-ar">
+        <div id="monitor-virtual">
+            <div class="browser-header">
+                <div class="flex gap-2 mr-4">
+                    <div class="w-2.5 h-2.5 rounded-full bg-red-500"></div>
+                    <div class="w-2.5 h-2.5 rounded-full bg-yellow-500"></div>
+                    <div class="w-2.5 h-2.5 rounded-full bg-green-500"></div>
+                </div>
+                <div class="browser-url font-semibold">
+                    <i class="fa-solid fa-bell text-[10px] text-blue-400"></i>
+                    <span>Notificaciones de tu dispositivo 📱</span>
+                </div>
+            </div>
+
+            <!-- CONTENEDOR DINÁMICO DE NOTICIAS -->
+            <div class="portal-content" id="contenedor-noticias">
+                <!-- El contenido se inyecta por JavaScript aquí -->
+            </div>
+
+            <!-- BOTÓN PARA CARGAR MÁS NOTICIAS -->
+            <div class="bg-black/40 border-t border-white/10 p-3 flex justify-center backdrop-blur-md">
+                <button onclick="cambiarNoticias()" class="text-[10px] uppercase tracking-widest font-bold text-blue-400 hover:text-white bg-blue-500/10 hover:bg-blue-500/30 px-5 py-2 rounded-full border border-blue-500/30 transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-rotate"></i> Notificaciones
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="ar-hud-top">
+        <div class="font-bold tracking-tighter uppercase">Gafas Inteligentes v2.5</div>
+        <div id="hud-status" class="text-blue-400 text-[10px] font-black mt-1">SISTEMA AR ACTIVO</div>
+    </div>
+
+    <div class="ar-hud-bottom">
+        <button onclick="toggleHistorial()" class="bg-blue-600/80 hover:bg-blue-500 px-6 py-3 rounded-full border border-blue-400 font-bold text-xs shadow-xl transition-all group">
+            <i class="fa-solid fa-fingerprint mr-2 group-hover:animate-pulse"></i> 
+            ABRIR HISTORIAL
+        </button>
+    </div>
+
+    <div id="modal-historial">
+        <!-- INDICADOR PATILLA IZQ DENTRO DEL MODAL -->
+        <div class="patilla-left-hint" onclick="limpiarHistorial()" title="Limpiar historial">
+            BOTÓN PATILLA IZQUIERDA (LIMPIAR)
+        </div>
+
+        <div class="holograma-panel w-[550px] p-8 rounded-[40px]">
+            <div class="flex justify-between items-start mb-8">
+                <div>
+                    <h2 class="text-2xl font-black italic tracking-tighter text-blue-400">HISTORIAL DE ANÁLISIS</h2>
+                    <p class="text-[10px] text-slate-400 font-mono mt-1">SESIÓN ID: #NV-882-XR</p>
+                </div>
+                <button onclick="toggleHistorial()" class="bg-white/10 p-2 rounded-full hover:bg-red-500/20">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 mb-8 text-center">
+                <div class="bg-green-500/10 p-4 rounded-2xl border border-green-500/40">
+                    <div class="text-2xl font-black text-green-400" id="stat-verificadas">0</div>
+                    <div class="text-[8px] uppercase font-bold text-green-200">Verificadas</div>
+                </div>
+                <div class="bg-red-500/10 p-4 rounded-2xl border border-red-500/40">
+                    <div class="text-2xl font-black text-red-400" id="stat-amenazas">0</div>
+                    <div class="text-[8px] uppercase font-bold text-red-200">Amenazas</div>
+                </div>
+                <div class="bg-orange-500/10 p-4 rounded-2xl border border-orange-500/40">
+                    <div class="text-2xl font-black text-orange-400" id="stat-alertas">0</div>
+                    <div class="text-[8px] uppercase font-bold text-orange-200">Alertas</div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <h3 class="text-[10px] font-black uppercase text-blue-300 mb-3 tracking-widest">Actividad de la Sesión</h3>
+                <div class="max-h-48 overflow-y-auto pr-2 space-y-2 custom-scroll" id="log-container">
+                    <!-- El registro de actividad se inyecta por JavaScript aquí -->
+                </div>
+            </div>
+
+            <!-- CONTROLES INFERIORES DEL HISTORIAL -->
+            <div class="border-t border-white/10 pt-4 flex justify-between items-center">
+                <button onclick="limpiarHistorial()" class="text-[10px] font-bold text-red-400 uppercase hover:text-red-300 transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-trash-can"></i> Limpiar (Patilla Izq)
+                </button>
+                <div class="flex gap-2">
+                    <div class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                    <span class="text-[9px] font-mono text-blue-400">IA-CORE: MONITORIZANDO...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const escena = document.getElementById('escena-ar');
+        const overlayFoco = document.getElementById('overlay-foco');
+        const hudStatus = document.getElementById('hud-status');
+        const monitor = document.getElementById('monitor-virtual');
+        const modal = document.getElementById('modal-historial');
+        
+        let analizadorTimeout = {};
+        
+        // DATOS DE LAS NOTIFICACIONES (LA COLA AMPLIADA)
+        const notificacionesData = [
+            // PÁGINA 1
+            {
+                id: 1, type: 'verificado', iconBg: 'bg-slate-100', icon: '⚽',
+                sourceColor: 'text-blue-600', source: 'FIFA NEWS • Tendencia',
+                title: 'Sedes confirmadas para el Mundial 2030: España lidera la propuesta.',
+                resultBg: 'bg-green-50', resultBorder: 'border-green-500', resultIcon: 'fa-check-circle text-green-600',
+                resultColor: 'text-green-700', resultTitle: 'VERIFICADO', resultText: 'Origen: Media-Trust FIFA.'
+            },
+            {
+                id: 2, type: 'falso', iconBg: 'bg-green-50', icon: '<i class="fa-brands fa-whatsapp text-green-500"></i>',
+                sourceColor: 'text-red-600', source: 'WhatsApp • Alerta Grupal',
+                title: '"¡Urgente! Mañana cierran tus cuentas si no compartes esto."',
+                resultBg: 'bg-red-50', resultBorder: 'border-red-500', resultIcon: 'fa-robot text-red-600',
+                resultColor: 'text-red-700', resultTitle: 'BULO DETECTADO', resultText: 'Patrón: Cadena de desinformación masiva.'
+            },
+            {
+                id: 3, type: 'phishing', iconBg: 'bg-red-50', icon: '⚠️',
+                sourceColor: 'text-orange-600', source: 'Sistema • Seguridad',
+                title: 'Netflix: Error en su suscripción. Actualice sus datos aquí.',
+                resultBg: 'bg-orange-50', resultBorder: 'border-orange-500', resultIcon: 'fa-triangle-exclamation text-orange-600',
+                resultColor: 'text-orange-700', resultTitle: 'PHISHING', resultText: 'Dominio falso detectado: netflx.xyz'
+            },
+            // PÁGINA 2
+            {
+                id: 4, type: 'phishing', iconBg: 'bg-red-50', icon: '🏦',
+                sourceColor: 'text-orange-600', source: 'SMS • Alerta Bancaria',
+                title: 'Banco Santander: Su cuenta ha sido bloqueada. Verifique su identidad.',
+                resultBg: 'bg-orange-50', resultBorder: 'border-orange-500', resultIcon: 'fa-triangle-exclamation text-orange-600',
+                resultColor: 'text-orange-700', resultTitle: 'PHISHING', resultText: 'Intento de robo de credenciales bancarias.'
+            },
+            {
+                id: 5, type: 'verificado', iconBg: 'bg-blue-50', icon: '🌤️',
+                sourceColor: 'text-blue-600', source: 'AEMET • Oficial',
+                title: 'Aviso Naranja: Fuertes tormentas esperadas en la costa mediterránea.',
+                resultBg: 'bg-green-50', resultBorder: 'border-green-500', resultIcon: 'fa-check-circle text-green-600',
+                resultColor: 'text-green-700', resultTitle: 'VERIFICADO', resultText: 'Aviso meteorológico oficial confirmado.'
+            },
+            {
+                id: 6, type: 'falso', iconBg: 'bg-slate-100', icon: '🚗',
+                sourceColor: 'text-red-600', source: 'Redes Sociales • Viral',
+                title: 'La DGT prohibirá circular a todos los vehículos de gasolina el próximo mes.',
+                resultBg: 'bg-red-50', resultBorder: 'border-red-500', resultIcon: 'fa-robot text-red-600',
+                resultColor: 'text-red-700', resultTitle: 'BULO DETECTADO', resultText: 'Noticia falsa. Regulaciones no alteradas.'
+            },
+            // PÁGINA 3
+            {
+                id: 7, type: 'phishing', iconBg: 'bg-red-50', icon: '📦',
+                sourceColor: 'text-orange-600', source: 'SMS • Paquetería',
+                title: 'Correos: Su paquete no ha podido ser entregado. Pague las tasas de aduana aquí.',
+                resultBg: 'bg-orange-50', resultBorder: 'border-orange-500', resultIcon: 'fa-triangle-exclamation text-orange-600',
+                resultColor: 'text-orange-700', resultTitle: 'PHISHING', resultText: 'Intento de fraude. Enlace no oficial.'
+            },
+            {
+                id: 8, type: 'verificado', iconBg: 'bg-blue-50', icon: '🏥',
+                sourceColor: 'text-blue-600', source: 'Sanidad Pública • Cita',
+                title: 'Recordatorio: Mañana a las 10:30h tiene cita con su médico de cabecera.',
+                resultBg: 'bg-green-50', resultBorder: 'border-green-500', resultIcon: 'fa-check-circle text-green-600',
+                resultColor: 'text-green-700', resultTitle: 'VERIFICADO', resultText: 'Notificación del sistema de salud oficial.'
+            },
+            {
+                id: 9, type: 'falso', iconBg: 'bg-slate-100', icon: '📢',
+                sourceColor: 'text-red-600', source: 'Facebook • Compartido',
+                title: 'El gobierno recortará las pensiones un 20% a partir de la próxima semana. ¡Difunde!',
+                resultBg: 'bg-red-50', resultBorder: 'border-red-500', resultIcon: 'fa-robot text-red-600',
+                resultColor: 'text-red-700', resultTitle: 'BULO DETECTADO', resultText: 'Desinformación económica sin fuente oficial.'
+            },
+            // PÁGINA 4
+            {
+                id: 10, type: 'verificado', iconBg: 'bg-slate-100', icon: '💡',
+                sourceColor: 'text-blue-600', source: 'Compañía Eléctrica',
+                title: 'Su última factura de la luz ya está disponible en su área de cliente.',
+                resultBg: 'bg-green-50', resultBorder: 'border-green-500', resultIcon: 'fa-check-circle text-green-600',
+                resultColor: 'text-green-700', resultTitle: 'VERIFICADO', resultText: 'Comunicación legítima de su proveedora.'
+            },
+            {
+                id: 11, type: 'phishing', iconBg: 'bg-green-50', icon: '🛒',
+                sourceColor: 'text-orange-600', source: 'WhatsApp • Promoción',
+                title: 'Mercadona está regalando cupones de 500€ por su aniversario. Entra aquí para reclamarlo.',
+                resultBg: 'bg-orange-50', resultBorder: 'border-orange-500', resultIcon: 'fa-triangle-exclamation text-orange-600',
+                resultColor: 'text-orange-700', resultTitle: 'PHISHING', resultText: 'Estafa clásica de suplantación de marca.'
+            },
+            {
+                id: 12, type: 'verificado', iconBg: 'bg-blue-50', icon: '👤',
+                sourceColor: 'text-blue-600', source: 'Mensaje • Hijo',
+                title: 'Hola mamá, llegaré sobre las 14:00 a comer. ¿Necesitas que compre el pan?',
+                resultBg: 'bg-green-50', resultBorder: 'border-green-500', resultIcon: 'fa-check-circle text-green-600',
+                resultColor: 'text-green-700', resultTitle: 'SEGURO', resultText: 'Contacto conocido guardado en la agenda.'
+            },
+            // PÁGINA 5
+            {
+                id: 13, type: 'phishing', iconBg: 'bg-red-50', icon: '🚨',
+                sourceColor: 'text-orange-600', source: 'SMS • DGT',
+                title: 'DGT: Tiene una multa de tráfico pendiente de pago. Último aviso antes de recargo.',
+                resultBg: 'bg-orange-50', resultBorder: 'border-orange-500', resultIcon: 'fa-triangle-exclamation text-orange-600',
+                resultColor: 'text-orange-700', resultTitle: 'PHISHING', resultText: 'La DGT nunca notifica multas por SMS con enlaces.'
+            },
+            {
+                id: 14, type: 'verificado', iconBg: 'bg-blue-50', icon: '📅',
+                sourceColor: 'text-blue-600', source: 'Calendario • Familiar',
+                title: 'Recordatorio: Cumpleaños de tu nieto Carlos mañana a las 17:00h.',
+                resultBg: 'bg-green-50', resultBorder: 'border-green-500', resultIcon: 'fa-check-circle text-green-600',
+                resultColor: 'text-green-700', resultTitle: 'SEGURO', resultText: 'Evento verificado en tu calendario personal.'
+            },
+            {
+                id: 15, type: 'falso', iconBg: 'bg-slate-100', icon: '✈️',
+                sourceColor: 'text-red-600', source: 'Redes Sociales • Sorteo',
+                title: 'Iberia regala 2 billetes gratis a cualquier destino por su 90 aniversario. ¡Participa!',
+                resultBg: 'bg-red-50', resultBorder: 'border-red-500', resultIcon: 'fa-robot text-red-600',
+                resultColor: 'text-red-700', resultTitle: 'BULO DETECTADO', resultText: 'Sorteo falso. Perfil no oficial de la aerolínea.'
+            },
+            // PÁGINA 6
+            {
+                id: 16, type: 'verificado', iconBg: 'bg-slate-100', icon: '⚙️',
+                sourceColor: 'text-blue-600', source: 'Sistema • Gafas AR',
+                title: 'Actualización de seguridad NeuroVeraz v2.6 lista para instalar esta noche.',
+                resultBg: 'bg-green-50', resultBorder: 'border-green-500', resultIcon: 'fa-check-circle text-green-600',
+                resultColor: 'text-green-700', resultTitle: 'VERIFICADO', resultText: 'Firma de software original confirmada.'
+            },
+            {
+                id: 17, type: 'phishing', iconBg: 'bg-red-50', icon: '💳',
+                sourceColor: 'text-orange-600', source: 'Email • CaixaBank',
+                title: 'Aviso: Su tarjeta ha sido restringida por seguridad. Reactívela desde este enlace.',
+                resultBg: 'bg-orange-50', resultBorder: 'border-orange-500', resultIcon: 'fa-triangle-exclamation text-orange-600',
+                resultColor: 'text-orange-700', resultTitle: 'PHISHING', resultText: 'El enlace redirige a una web no segura.'
+            },
+            {
+                id: 18, type: 'falso', iconBg: 'bg-green-50', icon: '<i class="fa-brands fa-whatsapp text-green-500"></i>',
+                sourceColor: 'text-red-600', source: 'WhatsApp • Audio Viral',
+                title: 'Audio reenviado: "Los médicos recomiendan beber agua caliente con limón para curarlo todo."',
+                resultBg: 'bg-red-50', resultBorder: 'border-red-500', resultIcon: 'fa-robot text-red-600',
+                resultColor: 'text-red-700', resultTitle: 'BULO DETECTADO', resultText: 'Desinformación médica. Sin evidencia científica.'
+            }
+        ];
+
+        let paginaActual = 0;
+        const itemsPorPagina = 3;
+
+        // ESTADO DEL HISTORIAL DINÁMICO
+        let stats = { verificadas: 0, amenazas: 0, alertas: 0 };
+        let logsActivity = [];
+        let scannedIds = new Set(); // Evita sumar la misma noticia dos veces
+
+        // RENDERIZADO DINÁMICO
+        function renderNoticias() {
+            const contenedor = document.getElementById('contenedor-noticias');
+            contenedor.innerHTML = '';
+            
+            const inicio = paginaActual * itemsPorPagina;
+            const fin = inicio + itemsPorPagina;
+            const noticiasMostradas = notificacionesData.slice(inicio, fin);
+
+            noticiasMostradas.forEach(item => {
+                contenedor.innerHTML += `
+                    <div class="tarjeta-noticia" id="noticia-${item.id}" onmouseenter="activarNoticia('${item.id}', '${item.type}')" onmouseleave="desactivarNoticia('${item.id}')">
+                        <div class="linea-escaner" id="escaner-${item.id}"></div>
+                        <div class="flex items-center justify-center w-20 ${item.iconBg} text-2xl">${item.icon}</div>
+                        <div class="flex-grow p-4">
+                            <span class="text-[9px] font-bold ${item.sourceColor} uppercase tracking-widest">${item.source}</span>
+                            <h2 class="text-sm font-bold text-slate-800 leading-tight mt-0.5">${item.title}</h2>
+                        </div>
+                        <div id="resultado-${item.id}" class="resultado-analisis ${item.resultBg} border-l-4 ${item.resultBorder}">
+                            <i class="fa-solid ${item.resultIcon} text-2xl mr-3"></i>
+                            <div>
+                                <h3 class="text-[10px] font-black ${item.resultColor}">${item.resultTitle}</h3>
+                                <p class="text-[9px] text-slate-600">${item.resultText}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // CAMBIAR PÁGINA DE NOTICIAS
+        function cambiarNoticias() {
+            paginaActual++;
+            if (paginaActual * itemsPorPagina >= notificacionesData.length) {
+                paginaActual = 0; // Vuelve al principio si se acaban
+            }
+            renderNoticias();
+            document.getElementById('contenedor-noticias').scrollTop = 0;
+        }
+
+        // FUNCIONES DE INTERACCIÓN (FOCO)
+        function moverTodo(e) {
+            const x = e.clientX;
+            const y = e.clientY;
+            overlayFoco.style.setProperty('--x', `${x}px`);
+            overlayFoco.style.setProperty('--y', `${y}px`);
+
+            const moveX = (x / window.innerWidth - 0.5) * 15;
+            const moveY = (y / window.innerHeight - 0.5) * 15;
+            escena.style.transform = `translate(${moveX * -1}px, ${moveY * -1}px)`;
+            monitor.style.transform = `rotateY(${moveX * 0.15}deg) rotateX(${moveY * -0.15}deg)`;
+        }
+
+        function activarNoticia(id, tipo) {
+            const card = document.getElementById(`noticia-${id}`);
+            const scanner = document.getElementById(`escaner-${id}`);
+            const result = document.getElementById(`resultado-${id}`);
+
+            card.classList.add('noticia-activa');
+            scanner.style.display = 'block';
+            hudStatus.innerHTML = '<i class="fa-solid fa-sync fa-spin"></i> ESCANEANDO...';
+
+            analizadorTimeout[id] = setTimeout(() => {
+                scanner.style.display = 'none';
+                result.classList.add('mostrar');
+                
+                if(tipo === 'falso') card.classList.add('aura-roja');
+                else if(tipo === 'phishing') card.classList.add('aura-naranja');
+                else card.classList.add('aura-verde');
+                
+                hudStatus.innerText = "ANÁLISIS COMPLETADO";
+
+                // ACTUALIZAR HISTORIAL AL ESCANEAR LA NOTICIA
+                if(!scannedIds.has(id)) {
+                    scannedIds.add(id);
+                    const noticiaInfo = notificacionesData.find(n => String(n.id) === String(id));
+                    
+                    if(tipo === 'falso') {
+                        stats.amenazas++;
+                        logsActivity.unshift({ tipo: 'rojo', status: '⚠ BLOQUEADA', text: `${noticiaInfo.source}: Patrón de desinformación detectado.` });
+                    } else if(tipo === 'phishing') {
+                        stats.alertas++;
+                        logsActivity.unshift({ tipo: 'naranja', status: '⚡ AMENAZA', text: `${noticiaInfo.source}: Intento de fraude o phishing bloqueado.` });
+                    } else {
+                        stats.verificadas++;
+                        logsActivity.unshift({ tipo: 'verde', status: '✓ VERIFICADA', text: `${noticiaInfo.source}: Fuente segura y confirmada.` });
+                    }
+                    actualizarHistorialDOM();
+                }
+            }, 800);
+        }
+
+        // DIBUJAR LOS CAMBIOS DEL HISTORIAL EN PANTALLA
+        function actualizarHistorialDOM() {
+            document.getElementById('stat-verificadas').innerText = stats.verificadas;
+            document.getElementById('stat-amenazas').innerText = stats.amenazas;
+            document.getElementById('stat-alertas').innerText = stats.alertas;
+
+            const container = document.getElementById('log-container');
+            if(logsActivity.length === 0) {
+                container.innerHTML = '<div class="text-slate-400 text-xs italic px-2 py-4">Aún no se ha analizado ninguna notificación en esta sesión...</div>';
+                return;
+            }
+
+            container.innerHTML = logsActivity.map(log => {
+                let borderClass = log.tipo === 'verde' ? 'border-l-green-500' : (log.tipo === 'rojo' ? 'border-l-red-500' : 'border-l-orange-500');
+                let statusClass = log.tipo === 'verde' ? 'text-green-400' : (log.tipo === 'rojo' ? 'text-red-400' : 'text-orange-400');
+                return `
+                    <div class="log-entry ${borderClass}">
+                        <span class="entry-status ${statusClass}">${log.status}</span>
+                        <span class="text-slate-300">${log.text}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function desactivarNoticia(id) {
+            const card = document.getElementById(`noticia-${id}`);
+            const result = document.getElementById(`resultado-${id}`);
+            clearTimeout(analizadorTimeout[id]);
+            card.classList.remove('noticia-activa', 'aura-verde', 'aura-roja', 'aura-naranja');
+            result.classList.remove('mostrar');
+            document.getElementById(`escaner-${id}`).style.display = 'none';
+            hudStatus.innerText = "SISTEMA AR ACTIVO";
+        }
+
+        // FUNCIÓN PARA LIMPIAR EL HISTORIAL Y REINICIAR CONTADORES
+        function limpiarHistorial() {
+            stats = { verificadas: 0, amenazas: 0, alertas: 0 };
+            logsActivity = [];
+            scannedIds.clear(); // Permite volver a registrar noticias si se vuelven a escanear
+            
+            // Animación visual de borrado
+            const container = document.getElementById('log-container');
+            container.innerHTML = '<div class="text-green-400 text-xs font-bold px-2 py-4 flex items-center gap-2"><i class="fa-solid fa-check"></i> Memoria de sesión borrada con éxito.</div>';
+            
+            // Reiniciar contadores visualmente al instante
+            document.getElementById('stat-verificadas').innerText = '0';
+            document.getElementById('stat-amenazas').innerText = '0';
+            document.getElementById('stat-alertas').innerText = '0';
+
+            // Restaurar el mensaje de "Aún no se ha analizado" tras 1.5s
+            setTimeout(() => {
+                actualizarHistorialDOM();
+            }, 1500);
+        }
+
+        function toggleHistorial() {
+            modal.classList.toggle('activo');
+        }
+
+        // INICIALIZACIÓN
+        window.onload = () => {
+            overlayFoco.style.setProperty('--x', '50%');
+            overlayFoco.style.setProperty('--y', '50%');
+            renderNoticias(); // Carga la primera página al iniciar
+            actualizarHistorialDOM(); // Inicializa el historial a cero
+        };
+    </script>
+</body>
+</html>
