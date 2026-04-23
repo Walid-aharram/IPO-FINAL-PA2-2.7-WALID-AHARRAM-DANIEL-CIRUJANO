@@ -80,9 +80,9 @@ María comprende que el mensaje puede ser peligroso y no entra a ningún enlace 
 4.1. Ignorar mensaje 
 
 
-![uso de IA](elevator_pitch.png)
+![uso de IA](zg4ladni.png)
 
-**![][image2]**
+![uso de IA](zg4ladni.png)
 
 • **Otro posible escenario de uso**  
 
@@ -121,10 +121,11 @@ Luís revisa la información de forma sencilla, comprendiendo qué situaciones  
 
 5.1. Luís finaliza la consulta
 
-![][image3]  
+![uso de IA](zg4ladni.png)
+
 **Storyboard:** 
 
-**![][image4]**
+![uso de IA](zg4ladni.png)
 
 • **Último escenario de uso** 
 
@@ -155,9 +156,12 @@ Activa sus gafas inteligentes y el sistema analiza cada publicación en menos de
 
 5.1. Carlos se quita las gafas y dispone de tiempo para su compromiso  personal 
 
-![][image5]**Storyboard:** 
+![uso de IA](zg4ladni.png)
 
-**![][image6]**  
+**Storyboard:** 
+
+![uso de IA](zg4ladni.png)
+
 • **Justificación:** Esta fase del proceso de diseño centrado en el usuario es  fundamental, ya que permite trasladar la información que obtuvimos en el  needfinding a representaciones más estructuradas y útiles para el diseño. 
 
 La definición de Personas nos permite ponernos en la piel del usuario  mejorando la toma de decisiones para mantener el foco en sus necesidades. 
