@@ -82,7 +82,7 @@ María comprende que el mensaje puede ser peligroso y no entra a ningún enlace 
 
 ![uso de IA](zg4ladni.png)
 
-![uso de IA](zg4ladni.png)
+![uso de IA](v50i5ha5.png)
 
 • **Otro posible escenario de uso**  
 
