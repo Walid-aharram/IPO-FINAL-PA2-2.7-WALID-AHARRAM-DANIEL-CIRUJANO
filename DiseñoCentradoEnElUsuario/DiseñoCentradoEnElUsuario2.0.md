@@ -158,7 +158,7 @@ Activa sus gafas inteligentes y el sistema analiza cada publicación en menos de
 
 5.1. Carlos se quita las gafas y dispone de tiempo para su compromiso  personal 
 
-![uso de IA](zg4ladni.png)
+![uso de IA](v5bibtnk.png)
 
 **Storyboard:** 
 
