@@ -82,6 +82,8 @@ María comprende que el mensaje puede ser peligroso y no entra a ningún enlace 
 
 ![uso de IA](zg4ladni.png)
 
+**Storyboard:** 
+
 ![uso de IA](v50i5ha5.png)
 
 • **Otro posible escenario de uso**  
@@ -121,7 +123,7 @@ Luís revisa la información de forma sencilla, comprendiendo qué situaciones  
 
 5.1. Luís finaliza la consulta
 
-![uso de IA](zg4ladni.png)
+![uso de IA](kfegyizy.png)
 
 **Storyboard:** 
 
