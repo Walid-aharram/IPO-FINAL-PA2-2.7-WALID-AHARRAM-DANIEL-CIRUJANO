@@ -162,7 +162,7 @@ Activa sus gafas inteligentes y el sistema analiza cada publicación en menos de
 
 **Storyboard:** 
 
-![uso de IA](zg4ladni.png)
+![uso de IA](chjsjaml.png)
 
 • **Justificación:** Esta fase del proceso de diseño centrado en el usuario es  fundamental, ya que permite trasladar la información que obtuvimos en el  needfinding a representaciones más estructuradas y útiles para el diseño. 
 
