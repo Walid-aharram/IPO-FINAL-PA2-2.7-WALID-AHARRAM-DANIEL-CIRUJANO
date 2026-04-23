@@ -127,7 +127,7 @@ Luís revisa la información de forma sencilla, comprendiendo qué situaciones  
 
 **Storyboard:** 
 
-![uso de IA](zg4ladni.png)
+![uso de IA](zto0d0md.png)
 
 • **Último escenario de uso** 
 
