@@ -1,4 +1,4 @@
-**Práctica: Prototipo digital** 
+## Práctica: Prototipo digital ## 
 
 **Walid Aharram y Daniel Cirujano Montero** 
 
