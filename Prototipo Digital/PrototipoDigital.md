@@ -58,4 +58,6 @@ Ambos hemos trabajado en el desarrollo del prototipo digital de la aplicación c
 
 **Walid Aharram :** Ha realizado el video de demostración del prototipo realizado y un video de las pruebas a un usuario. 
 
-**Daniel Cirujano Montero:** ha realizado un video de las pruebas a un usuario. **6\. Anexo: Uso de Inteligencia Artificial en el Diseño** Hemos utilizado Stitch AI para el desarrollo del prototipo.
+**Daniel Cirujano Montero:** ha realizado un video de las pruebas a un usuario. 
+
+**6\. Anexo: Uso de Inteligencia Artificial en el Diseño** Hemos utilizado Stitch AI para el desarrollo del prototipo.
